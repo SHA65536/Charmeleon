@@ -1,0 +1,7 @@
+*.exe
+.env
+fyne-cross/
+*.db
+*.do-journal
+
+!.gitkeep
