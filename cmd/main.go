@@ -2,12 +2,15 @@ package main
 
 import (
 	"charmeleon/pokemon"
+	"charmeleon/server"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 )
 
 const data_export = `https://github.com/msikma/pokesprite/trunk/data/pokemon.json`
@@ -17,8 +20,7 @@ const clean_cmd = "sudo rm -r data/ pokemon-gen8/*.png"
 const rename_cmd = `mv pokemon-gen8/ data/ && mv pokemon.json data/sprites.json`
 
 func main() {
-	redownload()
-	parse()
+	startServer()
 }
 
 //Warning: SVN needs to installed for this to work
@@ -60,4 +62,19 @@ func parse() {
 		}
 		fmt.Scanln()
 	}
+}
+
+func startServer() {
+	serv, err := server.MakeCharmServ()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	done := make(chan os.Signal, 1)
+	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+
+	go serv.Start()
+
+	<-done
+	serv.Stop()
 }
