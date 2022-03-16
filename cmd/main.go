@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"syscall"
 )
 
@@ -20,7 +21,8 @@ const clean_cmd = "sudo rm -r data/ pokemon-gen8/*.png"
 const rename_cmd = `mv pokemon-gen8/ data/ && mv pokemon.json data/sprites.json`
 
 func main() {
-	startServer()
+	index, _ := parse()
+	convertToXterm(index)
 }
 
 //Warning: SVN needs to installed for this to work
@@ -47,20 +49,21 @@ func redownload() {
 	fmt.Println("Complete! You should rebuild the server.")
 }
 
-func parse() {
+func parse() (map[string]*pokemon.Pokemon, error) {
 	var pokedex map[string]*pokemon.Pokemon
-	var formatted []byte
-	var err error
 	jsonFile, _ := os.Open("data/sprites.json")
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, &pokedex)
-	for _, v := range pokedex {
-		if formatted, err = json.MarshalIndent(v, "", "   "); err != nil {
-			fmt.Println(err)
-		} else {
-			fmt.Println(string(formatted))
+	err := json.Unmarshal(byteValue, &pokedex)
+	return pokedex, err
+}
+
+func convertToXterm(pokes map[string]*pokemon.Pokemon) {
+	for _, poke := range pokes {
+		for _, path := range poke.Forms.Entries {
+			png := strings.Replace(path.Path, "{name}", poke.Slug.Str, 1) + ".png"
+			cow := png + ".cow"
+			exec.Command("img2xterm", png, cow).Run()
 		}
-		fmt.Scanln()
 	}
 }
 
