@@ -21,8 +21,7 @@ const clean_cmd = "sudo rm -r data/ pokemon-gen8/*.png"
 const rename_cmd = `mv pokemon-gen8/ data/ && mv pokemon.json data/sprites.json`
 
 func main() {
-	index, _ := parse()
-	convertToXterm(index)
+	startServer()
 }
 
 //Warning: SVN needs to installed for this to work

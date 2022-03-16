@@ -47,15 +47,11 @@ func (self *CharmServ) Stop() {
 }
 
 func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
-	pty, _, active := s.Pty()
+	_, _, active := s.Pty()
 	if !active {
 		fmt.Println("no active terminal, skipping")
 		return nil, nil
 	}
-	m := model{
-		term:   pty.Term,
-		width:  pty.Window.Width,
-		height: pty.Window.Height,
-	}
-	return m, []tea.ProgramOption{tea.WithAltScreen()}
+
+	return InitialPage(), []tea.ProgramOption{tea.WithAltScreen()}
 }
