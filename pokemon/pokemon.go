@@ -2,6 +2,7 @@ package pokemon
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -22,63 +23,55 @@ func Pascal(input string) string {
 }
 
 type Pokemon struct {
-	Index string `json:"idx"`
-	Name  Name   `json:"name"`
-	Slug  Name   `json:"slug"`
-	Forms Forms  `json:"gen-8"`
-}
-
-type Name struct {
-	Str string `json:"eng"`
-}
-
-type Forms struct {
-	Entries []Form
+	Index string
+	Name  string
+	Slug  string
+	Forms []Form
 }
 
 type Form struct {
-	Path string `json:"path"`
-	Name string `json:"name"`
+	Name string
+	Png  string
+	Cow  string
 }
 
-func (f *Forms) UnmarshalJSON(data []byte) error {
-	value := gjson.GetBytes(data, "forms")
-	f.Entries = make([]Form, 0)
-	value.ForEach(func(key, val gjson.Result) bool {
-		if strings.Contains(val.String(), "is_alias_of") {
-			return true
+func (p *Pokemon) UnmarshalJSON(data []byte) error {
+	var parsed map[string]string
+	var path string
+	p.Index = gjson.GetBytes(data, "idx").String()
+	p.Name = gjson.GetBytes(data, "name.eng").String()
+	p.Slug = gjson.GetBytes(data, "slug.eng").String()
+	p.Forms = make([]Form, 0)
+	forms := gjson.GetBytes(data, "gen-8.forms")
+	json.Unmarshal([]byte(forms.String()), &parsed)
+	for name, val := range parsed {
+		if strings.Contains(val, "is_alias_of") {
+			continue
 		}
-		if key.String() == "$" {
-			f.Entries = append(f.Entries, Form{"data/regular/{name}", "Regular"})
-			f.Entries = append(f.Entries, Form{"data/shiny/{name}", "Shiny"})
-			if strings.Contains(val.String(), `"has_female": true`) {
-				f.Entries = append(f.Entries, Form{"data/regular/female/{name}", "Female"})
-				f.Entries = append(f.Entries, Form{"data/shiny/female/{name}", "Shiny Female"})
+		if name == "$" {
+			path = fmt.Sprintf("data/regular/%s.png", p.Slug)
+			p.Forms = append(p.Forms, Form{"Regular", path, path + ".cow"})
+			path = fmt.Sprintf("data/shiny/%s.png", p.Slug)
+			p.Forms = append(p.Forms, Form{"Shiny", path, path + ".cow"})
+			if strings.Contains(val, "has_female") {
+				path = fmt.Sprintf("data/regular/female/%s.png", p.Slug)
+				p.Forms = append(p.Forms, Form{"Female", path, path + ".cow"})
+				path = fmt.Sprintf("data/shiny/female/%s.png", p.Slug)
+				p.Forms = append(p.Forms, Form{"Shiny Female", path, path + ".cow"})
 			}
 		} else {
-			f.Entries = append(f.Entries, Form{"data/regular/{name}-" + key.String(), Pascal(key.String())})
-			f.Entries = append(f.Entries, Form{"data/shiny/{name}-" + key.String(), Pascal("Shiny " + key.String())})
-			if strings.Contains(val.String(), `"has_female": true`) {
-				f.Entries = append(f.Entries, Form{"data/regular/female/{name}-" + key.String(), Pascal("Female " + key.String())})
-				f.Entries = append(f.Entries, Form{"data/shiny/female/{name}-" + key.String(), Pascal("Shiny Female " + key.String())})
+			pname := Pascal(name)
+			path = fmt.Sprintf("data/regular/%s-%s.png", p.Slug, name)
+			p.Forms = append(p.Forms, Form{"Regular " + pname, path, path + ".cow"})
+			path = fmt.Sprintf("data/shiny/%s-%s.png", p.Slug, name)
+			p.Forms = append(p.Forms, Form{"Shiny " + pname, path, path + ".cow"})
+			if strings.Contains(val, "has_female") {
+				path = fmt.Sprintf("data/regular/female/%s-%s.png", p.Slug, name)
+				p.Forms = append(p.Forms, Form{"Female " + pname, path, path + ".cow"})
+				path = fmt.Sprintf("data/shiny/female/%s-%s.png", p.Slug, name)
+				p.Forms = append(p.Forms, Form{"Shiny Female " + pname, path, path + ".cow"})
 			}
 		}
-		return true
-	})
-	return nil
-}
-
-func (p *Pokemon) MarshalJSON() ([]byte, error) {
-	for i := range p.Forms.Entries {
-		p.Forms.Entries[i].Path = strings.Replace(p.Forms.Entries[i].Path, "{name}", p.Slug.Str, 1) + ".png"
 	}
-	return json.Marshal(&struct {
-		Index string `json:"idx"`
-		Name  string `json:"name"`
-		Forms []Form `json:"forms"`
-	}{
-		Index: p.Index,
-		Name:  p.Name.Str,
-		Forms: p.Forms.Entries,
-	})
+	return nil
 }

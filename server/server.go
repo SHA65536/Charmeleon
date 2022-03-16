@@ -1,9 +1,12 @@
 package server
 
 import (
+	"charmeleon/pokemon"
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -13,12 +16,19 @@ import (
 	"github.com/gliderlabs/ssh"
 )
 
+var Pokedex map[string]*pokemon.Pokemon
+
 type CharmServ struct {
 	Serv *ssh.Server
 }
 
 func MakeCharmServ() (*CharmServ, error) {
 	var err error
+	file, err := os.ReadFile("data/sprites.json")
+	err = json.Unmarshal(file, &Pokedex)
+	if err != nil {
+		log.Fatal(err)
+	}
 	self := &CharmServ{}
 	self.Serv, err = wish.NewServer(
 		wish.WithAddress("0.0.0.0:23234"),

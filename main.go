@@ -5,12 +5,10 @@ import (
 	"charmeleon/server"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
 	"os/signal"
-	"strings"
 	"syscall"
 )
 
@@ -48,20 +46,16 @@ func redownload() {
 	fmt.Println("Complete! You should rebuild the server.")
 }
 
-func parse() (map[string]*pokemon.Pokemon, error) {
+func convertToXterm() {
 	var pokedex map[string]*pokemon.Pokemon
-	jsonFile, _ := os.Open("data/sprites.json")
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-	err := json.Unmarshal(byteValue, &pokedex)
-	return pokedex, err
-}
-
-func convertToXterm(pokes map[string]*pokemon.Pokemon) {
-	for _, poke := range pokes {
-		for _, path := range poke.Forms.Entries {
-			png := strings.Replace(path.Path, "{name}", poke.Slug.Str, 1) + ".png"
-			cow := png + ".cow"
-			exec.Command("img2xterm", png, cow).Run()
+	file, err := os.ReadFile("data/sprites.json")
+	err = json.Unmarshal(file, &pokedex)
+	if err != nil {
+		log.Fatal(err)
+	}
+	for _, poke := range pokedex {
+		for _, form := range poke.Forms {
+			exec.Command("img2xterm", form.Png, form.Cow).Run()
 		}
 	}
 }
