@@ -8,11 +8,12 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
-var docStyle = lipgloss.NewStyle().Margin(1, 2)
+var docStyle = lipgloss.NewStyle()
 
 type MenuModel struct {
 	pokemodel *PokeModel
 	list      list.Model
+	hidden    bool
 }
 
 func (m *MenuModel) Init() tea.Cmd { return nil }
@@ -29,6 +30,7 @@ func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		top, right, bottom, left := docStyle.GetMargin()
 		m.list.SetSize(msg.Width-left-right, msg.Height-top-bottom)
+		m.hidden = msg.Height <= 9 || msg.Width <= 20
 	}
 
 	var cmd tea.Cmd
@@ -36,6 +38,9 @@ func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, cmd
 }
 func (m *MenuModel) View() string {
+	if m.hidden {
+		return ""
+	}
 	return docStyle.Render(m.list.View())
 }
 

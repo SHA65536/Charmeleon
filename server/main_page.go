@@ -26,6 +26,7 @@ func InitialPage() MainPage {
 
 	menu := MenuModel{pokemodel: &poke, list: list.New(items, list.NewDefaultDelegate(), 0, 0)}
 	menu.list.SetShowPagination(false)
+	menu.list.SetShowHelp(false)
 
 	menu.list.Title = "Pokemon List"
 
@@ -35,7 +36,7 @@ func InitialPage() MainPage {
 		VerticalStacked: false,
 		// spacing
 		SizeFunc: func(_ boxer.Node, widthOrHeight int) []int {
-			menuWidth := widthOrHeight / 2
+			menuWidth := widthOrHeight / 3
 			pokeWidth := widthOrHeight - menuWidth
 			return []int{menuWidth, pokeWidth}
 		},
@@ -54,6 +55,8 @@ func (m MainPage) Init() tea.Cmd {
 func (m MainPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		m.tui.ModelMap["menu"].Update(msg)
+		m.tui.ModelMap["poke"].Update(msg)
 		switch msg.String() {
 		case "q", "ctrl+c":
 			return m, tea.Quit
@@ -61,8 +64,6 @@ func (m MainPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.tui.UpdateSize(msg)
 	}
-	m.tui.ModelMap["menu"].Update(msg)
-	m.tui.ModelMap["poke"].Update(msg)
 	return m, nil
 }
 func (m MainPage) View() string { return m.tui.View() }

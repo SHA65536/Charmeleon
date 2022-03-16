@@ -4,4 +4,6 @@ fyne-cross/
 *.db
 *.do-journal
 
+charmeleon
+
 !.gitkeep

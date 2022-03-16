@@ -1,7 +1,9 @@
 package server
 
 import (
+	"bufio"
 	"os"
+	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -10,6 +12,8 @@ type PokeModel struct {
 	index    string
 	cur_form int
 	cow      string
+	hidden   bool
+	margin   int
 }
 
 func (s *PokeModel) UpdateIndex(idx string) {
@@ -31,7 +35,17 @@ func (s *PokeModel) UpdateForm(add int) {
 
 // satisfy the tea.Model interface
 func (s *PokeModel) Init() tea.Cmd { return nil }
-func (s *PokeModel) View() string  { return s.cow }
+func (s *PokeModel) View() string {
+	var res string
+	if s.hidden {
+		return res
+	}
+	scanner := bufio.NewScanner(strings.NewReader(s.cow))
+	for scanner.Scan() {
+		res += strings.Repeat(" ", s.margin) + scanner.Text() + "\n"
+	}
+	return res
+}
 func (s *PokeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
@@ -41,6 +55,9 @@ func (s *PokeModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "d", "right":
 			s.UpdateForm(1)
 		}
+	case tea.WindowSizeMsg:
+		s.margin = (msg.Width - 68) / 2
+		s.hidden = msg.Width < 68 || msg.Height <= 28
 	}
 	return s, nil
 }

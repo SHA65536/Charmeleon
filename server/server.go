@@ -22,7 +22,7 @@ type CharmServ struct {
 	Serv *ssh.Server
 }
 
-func MakeCharmServ() (*CharmServ, error) {
+func MakeCharmServ(conn string) (*CharmServ, error) {
 	var err error
 	file, err := os.ReadFile("data/sprites.json")
 	err = json.Unmarshal(file, &Pokedex)
@@ -31,7 +31,7 @@ func MakeCharmServ() (*CharmServ, error) {
 	}
 	self := &CharmServ{}
 	self.Serv, err = wish.NewServer(
-		wish.WithAddress("0.0.0.0:23234"),
+		wish.WithAddress(conn),
 		wish.WithMiddleware(
 			bm.Middleware(teaHandler),
 			lm.Middleware(),
@@ -41,7 +41,7 @@ func MakeCharmServ() (*CharmServ, error) {
 }
 
 func (self *CharmServ) Start() {
-	fmt.Println("Starting SSH server on 0.0.0.0:23234")
+	fmt.Println("Starting SSH server on " + self.Serv.Addr)
 	if err := self.Serv.ListenAndServe(); err != nil {
 		log.Fatalln(err)
 	}
