@@ -14,6 +14,8 @@ var PokeStyle = lipgloss.NewStyle().
 
 type PokeModel struct {
 	Content string //68 x 28(56)
+	Index   string
+	Form    int
 }
 
 func (m *PokeModel) Init() tea.Cmd { return nil }
@@ -33,5 +35,22 @@ func (m *PokeModel) View() string {
 
 func InitialPoke() *PokeModel {
 	logo, _ := os.ReadFile("logo.cow")
-	return &PokeModel{string(logo)}
+	return &PokeModel{string(logo), "001", 0}
+}
+
+func (m *PokeModel) UpdatePokemon(idx string) {
+	m.Index = idx
+	m.Form = 0
+	dat, _ := os.ReadFile(Pokedex[idx].Forms[0].Cow)
+	m.Content = string(dat)
+}
+
+func (m *PokeModel) UpdateForm(direction int) {
+	if (m.Form + direction) < 0 {
+		m.Form = len(Pokedex[m.Index].Forms) - 1
+	} else {
+		m.Form = (m.Form + direction) % len(Pokedex[m.Index].Forms)
+	}
+	dat, _ := os.ReadFile(Pokedex[m.Index].Forms[m.Form].Cow)
+	m.Content = string(dat)
 }
