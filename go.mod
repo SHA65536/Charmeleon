@@ -10,7 +10,6 @@ require (
 	github.com/charmbracelet/wish v0.3.0
 	github.com/gliderlabs/ssh v0.3.3
 	github.com/tidwall/gjson v1.14.0
-	github.com/treilik/bubbleboxer v0.1.0
 )
 
 require (
