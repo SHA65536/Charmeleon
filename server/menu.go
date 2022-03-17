@@ -22,6 +22,8 @@ func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		switch msg.String() {
+		}
 		m.List, cmd = m.List.Update(msg)
 		return m, cmd
 	case tea.WindowSizeMsg:
@@ -39,7 +41,8 @@ func InitialMenu() *MenuModel {
 		v := Pokedex[k]
 		items = append(items, item{title: v.Name, desc: "#" + k + ": " + v.Name, idx: k})
 	}
-	pokeList := list.New(items, list.NewDefaultDelegate(), 20, 28)
+	pokeList := list.New(items, list.NewDefaultDelegate(), 0, 32)
+	pokeList.Title = "Pokedex"
 	pokeList.SetShowPagination(false)
 	pokeList.SetShowHelp(false)
 

@@ -1,6 +1,8 @@
 package server
 
 import (
+	"fmt"
+
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -19,11 +21,18 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		if msg.String() == "q" || msg.String() == "ctrl+c" {
+		switch msg.String() {
+		case "q", "ctrl+c":
 			return m, tea.Quit
-		} else {
+		case " ", "enter":
+			idx := (m.Menu.List.Paginator.Page * m.Menu.List.Paginator.PerPage) + m.Menu.List.Cursor() + 1
+			m.Image.UpdatePokemon(fmt.Sprintf("%03d", idx))
+		case "left", "a":
+			m.Image.UpdateForm(-1)
+		case "right", "d":
+			m.Image.UpdateForm(1)
+		case "up", "down", "w", "s":
 			m.Menu.Update(msg)
-			m.Image.Update(msg)
 		}
 	case tea.WindowSizeMsg:
 	}
