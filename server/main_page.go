@@ -1,69 +1,39 @@
 package server
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
-	boxer "github.com/treilik/bubbleboxer"
+	"github.com/charmbracelet/lipgloss"
 )
 
-type MainPage struct {
-	tui boxer.Boxer
+var AppStyle = lipgloss.NewStyle().
+	BorderStyle(lipgloss.ThickBorder()).
+	BorderForeground(lipgloss.Color("63"))
+
+type AppModel struct {
+	Menu  *MenuModel
+	Image *PokeModel
 }
 
-func InitialPage() MainPage {
-	dat, _ := os.ReadFile("logo.cow")
-	items := make([]list.Item, 0)
-	for i := 1; i <= len(Pokedex); i++ {
-		k := fmt.Sprintf("%03d", i)
-		v := Pokedex[k]
-		items = append(items, item{title: v.Name, desc: "#" + k + ": " + v.Name, idx: k})
-	}
-
-	poke := PokeModel{index: "001", cur_form: 0, cow: string(dat)}
-
-	menu := MenuModel{pokemodel: &poke, list: list.New(items, list.NewDefaultDelegate(), 0, 0)}
-	menu.list.SetShowPagination(false)
-	menu.list.SetShowHelp(false)
-
-	menu.list.Title = "Pokemon List"
-
-	m := MainPage{tui: boxer.Boxer{}}
-	m.tui.LayoutTree = boxer.Node{
-		// orientation
-		VerticalStacked: false,
-		// spacing
-		SizeFunc: func(_ boxer.Node, widthOrHeight int) []int {
-			menuWidth := widthOrHeight / 3
-			pokeWidth := widthOrHeight - menuWidth
-			return []int{menuWidth, pokeWidth}
-		},
-		Children: []boxer.Node{
-			m.tui.CreateLeaf("menu", &menu),
-			m.tui.CreateLeaf("poke", &poke),
-		},
-	}
-	return m
-}
-
-func (m MainPage) Init() tea.Cmd {
-	return nil
-}
-
-func (m MainPage) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *AppModel) Init() tea.Cmd { return nil }
+func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmd tea.Cmd
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		m.tui.ModelMap["menu"].Update(msg)
-		m.tui.ModelMap["poke"].Update(msg)
-		switch msg.String() {
-		case "q", "ctrl+c":
+		if msg.String() == "q" || msg.String() == "ctrl+c" {
 			return m, tea.Quit
+		} else {
+			m.Menu.Update(msg)
+			m.Image.Update(msg)
 		}
 	case tea.WindowSizeMsg:
-		m.tui.UpdateSize(msg)
 	}
-	return m, nil
+	return m, cmd
 }
-func (m MainPage) View() string { return m.tui.View() }
+func (m *AppModel) View() string {
+	return AppStyle.Render(lipgloss.JoinHorizontal(lipgloss.Left, m.Menu.View(), m.Image.View()))
+}
+
+func InitialPage() *AppModel {
+	self := &AppModel{InitialMenu(), InitialPoke()}
+	return self
+}
