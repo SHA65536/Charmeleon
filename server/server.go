@@ -32,6 +32,7 @@ func MakeCharmServ(conn string) (*CharmServ, error) {
 	self := &CharmServ{}
 	self.Serv, err = wish.NewServer(
 		wish.WithAddress(conn),
+		wish.WithHostKeyPath(".ssh/term_info_ed25519"),
 		wish.WithMiddleware(
 			bm.Middleware(teaHandler),
 			lm.Middleware(),
@@ -59,7 +60,6 @@ func (self *CharmServ) Stop() {
 func teaHandler(s ssh.Session) (tea.Model, []tea.ProgramOption) {
 	_, _, active := s.Pty()
 	if !active {
-		fmt.Println("no active terminal, skipping")
 		return nil, nil
 	}
 
