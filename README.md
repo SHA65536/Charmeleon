@@ -39,4 +39,4 @@ Arguments:
 ```
 
 ## Made with Charm
-![https://charm.sh](https://stuff.charm.sh/charm/charm-header.png)
+[![https://charm.sh](https://stuff.charm.sh/charm/charm-header.png)](https://charm.sh)
