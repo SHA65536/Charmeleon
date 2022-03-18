@@ -14,8 +14,8 @@ var PokeStyle = lipgloss.NewStyle().
 	BorderForeground(lipgloss.Color("63"))
 var DetailStyle = lipgloss.NewStyle().Bold(true).Width(36).Height(4)
 var Intructions = DetailStyle.Width(24).Render(`
-Use ^v to browse%s
-Use <> to change form%s
+Use ↑↓ to browse%s
+Use ←→ to change form%s
 Use space to select%s`)
 
 type PokeModel struct {
