@@ -36,7 +36,7 @@ type Form struct {
 }
 
 func (p *Pokemon) UnmarshalJSON(data []byte) error {
-	var parsed map[string]string
+	var parsed map[string]map[string]string
 	var path string
 	p.Index = gjson.GetBytes(data, "idx").String()
 	p.Name = gjson.GetBytes(data, "name.eng").String()
@@ -45,7 +45,7 @@ func (p *Pokemon) UnmarshalJSON(data []byte) error {
 	forms := gjson.GetBytes(data, "gen-8.forms")
 	json.Unmarshal([]byte(forms.String()), &parsed)
 	for name, val := range parsed {
-		if strings.Contains(val, "is_alias_of") {
+		if _, ok := val["is_alias_of"]; ok {
 			continue
 		}
 		if name == "$" {
@@ -53,7 +53,7 @@ func (p *Pokemon) UnmarshalJSON(data []byte) error {
 			p.Forms = append(p.Forms, Form{"Regular", path, path + ".cow"})
 			path = fmt.Sprintf("data/shiny/%s.png", p.Slug)
 			p.Forms = append(p.Forms, Form{"Shiny", path, path + ".cow"})
-			if strings.Contains(val, "has_female") {
+			if _, ok := val["has_female"]; ok {
 				path = fmt.Sprintf("data/regular/female/%s.png", p.Slug)
 				p.Forms = append(p.Forms, Form{"Female", path, path + ".cow"})
 				path = fmt.Sprintf("data/shiny/female/%s.png", p.Slug)
@@ -65,7 +65,7 @@ func (p *Pokemon) UnmarshalJSON(data []byte) error {
 			p.Forms = append(p.Forms, Form{"Regular " + pname, path, path + ".cow"})
 			path = fmt.Sprintf("data/shiny/%s-%s.png", p.Slug, name)
 			p.Forms = append(p.Forms, Form{"Shiny " + pname, path, path + ".cow"})
-			if strings.Contains(val, "has_female") {
+			if _, ok := val["has_female"]; ok {
 				path = fmt.Sprintf("data/regular/female/%s-%s.png", p.Slug, name)
 				p.Forms = append(p.Forms, Form{"Female " + pname, path, path + ".cow"})
 				path = fmt.Sprintf("data/shiny/female/%s-%s.png", p.Slug, name)
