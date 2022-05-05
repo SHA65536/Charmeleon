@@ -33,6 +33,8 @@ func (m *AppModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.Image.UpdateForm(1)
 		case "up", "down", "w", "s":
 			m.Menu.Update(msg)
+			idx := (m.Menu.List.Paginator.Page * m.Menu.List.Paginator.PerPage) + m.Menu.List.Cursor() + 1
+			m.Image.UpdatePokemon(fmt.Sprintf("%03d", idx))
 		}
 	case tea.WindowSizeMsg:
 	}
