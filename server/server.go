@@ -24,7 +24,7 @@ type CharmServ struct {
 
 func MakeCharmServ(conn string) (*CharmServ, error) {
 	var err error
-	file, err := os.ReadFile("data/sprites.json")
+	file, _ := os.ReadFile("data/sprites.json")
 	err = json.Unmarshal(file, &Pokedex)
 	if err != nil {
 		log.Fatal(err)
@@ -41,18 +41,18 @@ func MakeCharmServ(conn string) (*CharmServ, error) {
 	return self, err
 }
 
-func (self *CharmServ) Start() {
-	fmt.Println("Starting SSH server on " + self.Serv.Addr)
-	if err := self.Serv.ListenAndServe(); err != nil {
+func (srv *CharmServ) Start() {
+	fmt.Println("Starting SSH server on " + srv.Serv.Addr)
+	if err := srv.Serv.ListenAndServe(); err != nil {
 		log.Fatalln(err)
 	}
 }
 
-func (self *CharmServ) Stop() {
+func (srv *CharmServ) Stop() {
 	fmt.Println("Stopping SSH server")
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer func() { cancel() }()
-	if err := self.Serv.Shutdown(ctx); err != nil {
+	if err := srv.Serv.Shutdown(ctx); err != nil {
 		log.Fatalln(err)
 	}
 }
