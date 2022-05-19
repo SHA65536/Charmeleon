@@ -23,6 +23,10 @@ func (m *MenuModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
+		case "w":
+			m.List.CursorUp()
+		case "s":
+			m.List.CursorDown()
 		}
 		m.List, cmd = m.List.Update(msg)
 		return m, cmd
